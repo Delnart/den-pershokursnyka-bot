@@ -116,26 +116,58 @@ async def process_name(message: types.Message, state: FSMContext):
     except Exception:
         pass
 
-    text = (
-        "[2/5] 📱 Введи свій юзернейм у Telegram\n"
-        "Приклад: @username\n\n"
-        "<i>Якщо у тебе немає юзернейму — введи «немає»</i>"
-    )
-
-    if main_msg_id:
-        try:
-            await message.bot.edit_message_text(
-                chat_id=message.chat.id,
-                message_id=main_msg_id,
-                text=text
-            )
-        except Exception:
+    if message.from_user.username:
+        # Юзернейм є — пропускаємо цей крок і переходимо до вибору університету
+        await state.update_data(tg_username=f"@{message.from_user.username}")
+        
+        builder = InlineKeyboardBuilder()
+        builder.button(text="🎓 КПІ ім. Ігоря Сікорського", callback_data="uni_kpi")
+        builder.button(text="🏫 Інший університет", callback_data="uni_other")
+        builder.adjust(1)
+        
+        text = "🏛 Обери свій університет (Крок 2 з 4):"
+        
+        if main_msg_id:
+            try:
+                await message.bot.edit_message_text(
+                    chat_id=message.chat.id,
+                    message_id=main_msg_id,
+                    text=text,
+                    reply_markup=builder.as_markup()
+                )
+            except Exception:
+                new_msg = await message.answer(text, reply_markup=builder.as_markup())
+                await state.update_data(main_message_id=new_msg.message_id)
+        else:
+            new_msg = await message.answer(text, reply_markup=builder.as_markup())
+            await state.update_data(main_message_id=new_msg.message_id)
+            
+        await state.set_state(RegisterForm.choosing_university)
+        
+    else:
+        # Юзернейму немає — запитуємо вручну
+        text = (
+            "📱 Введи свій юзернейм (або телефон/інстаграм) для зв'язку\n"
+            "Приклад: @username\n\n"
+            "<i>(Оскільки у тебе не встановлений юзернейм в налаштуваннях Telegram, ми запитуємо контактні дані вручну. "
+            "Якщо не хочеш нічого вказувати — введи «немає».)</i>"
+        )
+    
+        if main_msg_id:
+            try:
+                await message.bot.edit_message_text(
+                    chat_id=message.chat.id,
+                    message_id=main_msg_id,
+                    text=text
+                )
+            except Exception:
+                new_msg = await message.answer(text)
+                await state.update_data(main_message_id=new_msg.message_id)
+        else:
             new_msg = await message.answer(text)
             await state.update_data(main_message_id=new_msg.message_id)
-    else:
-        new_msg = await message.answer(text)
-        await state.update_data(main_message_id=new_msg.message_id)
-    await state.set_state(RegisterForm.entering_username)
+            
+        await state.set_state(RegisterForm.entering_username)
 
 
 # ==================== КРОК 2: ЮЗЕРНЕЙМ ====================
@@ -165,7 +197,7 @@ async def process_username_input(message: types.Message, state: FSMContext):
     builder.button(text="🏫 Інший університет", callback_data="uni_other")
     builder.adjust(1)
     
-    text = "[3/5] 🏛 Обери свій університет:"
+    text = "🏛 Обери свій університет (Крок 2 з 4):"
 
     if main_msg_id:
         try:
