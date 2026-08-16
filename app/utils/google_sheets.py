@@ -23,7 +23,21 @@ def get_sheet():
     else:
         gc = gspread.service_account(filename="app/data/credentials.json")
 
-    return gc.open(os.getenv("LOG_SHEET_NAME"))
+    sheet_url_or_id = os.getenv("SHEET_URL", "")
+    
+    if not sheet_url_or_id:
+        # Резервний варіант, якщо SHEET_URL раптом пустий (на всяк випадок)
+        return gc.open(os.getenv("LOG_SHEET_NAME"))
+        
+    try:
+        # Якщо користувач ввів лише ID (наприклад 11HUlPn4...)
+        if not sheet_url_or_id.startswith("http"):
+            return gc.open_by_key(sheet_url_or_id)
+        else:
+            return gc.open_by_url(sheet_url_or_id)
+    except gspread.exceptions.SpreadsheetNotFound:
+        # Якщо і це не спрацювало, спробуємо по старинці через назву
+        return gc.open(os.getenv("LOG_SHEET_NAME"))
 
 
 def _append_row_sync(row_data: list):
