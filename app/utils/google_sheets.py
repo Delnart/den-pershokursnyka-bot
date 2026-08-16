@@ -26,9 +26,10 @@ def get_sheet():
     return gc.open(os.getenv("LOG_SHEET_NAME"))
 
 
-def _append_row_sync(sheet_name: str, row_data: list):
+def _append_row_sync(row_data: list):
     sh = get_sheet()
-    ws = sh.worksheet(sheet_name)
+    # Автоматично беремо перший аркуш у файлі (зазвичай "Відповіді форми 1" або "Аркуш1")
+    ws = sh.sheet1
     ws.append_row(row_data)
 
 
@@ -62,7 +63,7 @@ async def add_user_to_sheet(tg_id: int, username: str, name: str,
         # Увага: Форма зазвичай пише у "Відповіді форми 1". Якщо ти хочеш 
         # щоб бот писав туди ж, переконайся, що лист називається саме так. 
         # Або можна залишити "Users".
-        await asyncio.to_thread(_append_row_sync, "Users", row)
+        await asyncio.to_thread(_append_row_sync, row)
         print(f"✅ Користувача {name} успішно додано в Sheets!")
     except Exception as e:
         print(f"❌ ПОМИЛКА додавання користувача в Sheets: {e}")
@@ -70,7 +71,7 @@ async def add_user_to_sheet(tg_id: int, username: str, name: str,
 
 def _update_user_sync(tg_id: str, field: str, new_value):
     sh = get_sheet()
-    ws = sh.worksheet("Users")
+    ws = sh.sheet1
     try:
         # Шукаємо tg_id у 8-й колонці (H)
         cell = ws.find(str(tg_id), in_column=8)

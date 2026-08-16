@@ -91,12 +91,16 @@ async def start_registration(callback: types.CallbackQuery, state: FSMContext):
     except Exception:
         pass
 
-    new_msg = await callback.message.answer(
+    text = (
         "[1/5] 👤 Введи твоє ПІБ\n"
         "Приклад: Шевченко Тарас Григорович\n\n"
-        "<i>*після підтвердження реєстрації дані можна змінити в профілі</i>",
-        reply_markup=ReplyKeyboardRemove()
+        "<i>*після підтвердження реєстрації дані можна змінити в профілі</i>"
     )
+
+    try:
+        new_msg = await callback.message.edit_text(text)
+    except Exception:
+        new_msg = await callback.message.answer(text)
 
     await state.update_data(main_message_id=new_msg.message_id)
     await state.set_state(RegisterForm.entering_name)
