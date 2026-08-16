@@ -21,6 +21,11 @@ if BD_ENGINE.startswith("postgresql://"):
 # йому потрібен параметр ssl=require. Тому автозамінюємо.
 BD_ENGINE = BD_ENGINE.replace("sslmode=", "ssl=")
 
+# Деякі хмарні БД (як Neon чи Supabase) можуть додавати channel_binding у рядок,
+# який не підтримується asyncpg. Вирізаємо його:
+import re
+BD_ENGINE = re.sub(r'([?&])channel_binding=[^&]+(?:&|$)', r'\1', BD_ENGINE).rstrip('?&')
+
 super_admins_env = os.getenv("SUPER_ADMINS", "")
 SUPER_ADMINS = [int(x.strip()) for x in super_admins_env.split(",") if x.strip()]
 # NullPool — обов'язково для Neon:
