@@ -42,9 +42,16 @@ def get_sheet():
 
 def _append_row_sync(row_data: list):
     sh = get_sheet()
-    # Автоматично беремо перший аркуш у файлі (зазвичай "Відповіді форми 1" або "Аркуш1")
+    # Автоматично беремо перший аркуш у файлі
     ws = sh.sheet1
-    ws.append_row(row_data)
+    # Використовуємо table_range="A1" та insert_data_option="INSERT_ROWS", 
+    # щоб Google Sheets гарантовано створив новий рядок, а не перезаписував існуючий порожній
+    ws.append_row(
+        row_data, 
+        table_range="A1", 
+        value_input_option="USER_ENTERED", 
+        insert_data_option="INSERT_ROWS"
+    )
 
 
 async def add_user_to_sheet(tg_id: int, username: str, name: str,
