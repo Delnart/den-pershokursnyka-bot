@@ -17,6 +17,10 @@ if not BD_ENGINE:
 if BD_ENGINE.startswith("postgresql://"):
     BD_ENGINE = BD_ENGINE.replace("postgresql://", "postgresql+asyncpg://", 1)
 
+# Асинхронний драйвер asyncpg не розуміє параметр sslmode=require, 
+# йому потрібен параметр ssl=require. Тому автозамінюємо.
+BD_ENGINE = BD_ENGINE.replace("sslmode=", "ssl=")
+
 super_admins_env = os.getenv("SUPER_ADMINS", "")
 SUPER_ADMINS = [int(x.strip()) for x in super_admins_env.split(",") if x.strip()]
 # NullPool — обов'язково для Neon:
