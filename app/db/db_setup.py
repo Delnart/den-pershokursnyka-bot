@@ -8,7 +8,8 @@ from dotenv import load_dotenv
 
 load_dotenv()
 BD_ENGINE = os.getenv("BD_ENGINE")
-SUPER_ADMINS = [int(x) for x in os.getenv("SUPER_ADMINS").split(",")]
+super_admins_env = os.getenv("SUPER_ADMINS", "")
+SUPER_ADMINS = [int(x.strip()) for x in super_admins_env.split(",") if x.strip()]
 
 # NullPool — обов'язково для Neon:
 # Neon авто-призупиняє compute після ~5 хв неактивності.
