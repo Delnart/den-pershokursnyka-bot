@@ -1,56 +1,26 @@
 import gspread
 import asyncio
 import os
-import base64
 import json
-import tempfile
 from dotenv import load_dotenv
 
 load_dotenv()
 
-# Шлях до тимчасового credentials файлу (для Render)
-_TMP_CREDS_PATH: str | None = None
-
-
-def _ensure_credentials() -> str:
-    """
-    Повертає шлях до credentials.json.
-
-    Пріоритет:
-      1. Env var GOOGLE_CREDENTIALS_B64 — base64-рядок (для Render та інших хостингів)
-         Декодується і зберігається у тимчасовий файл один раз за сесію.
-      2. app/data/credentials.json — локальний файл (для розробки)
-    """
-    global _TMP_CREDS_PATH
-
-    b64 = os.getenv("GOOGLE_CREDENTIALS_B64")
-    if b64:
-        if _TMP_CREDS_PATH and os.path.exists(_TMP_CREDS_PATH):
-            return _TMP_CREDS_PATH
-
-        creds_data = json.loads(base64.b64decode(b64).decode("utf-8"))
-        tmp = tempfile.NamedTemporaryFile(
-            mode="w", suffix=".json", delete=False, encoding="utf-8"
-        )
-        json.dump(creds_data, tmp)
-        tmp.flush()
-        tmp.close()
-        _TMP_CREDS_PATH = tmp.name
-        return _TMP_CREDS_PATH
-
-    # Фолбек для локальної розробки
-    local_path = "app/data/credentials.json"
-    if os.path.exists(local_path):
-        return local_path
-
-    raise FileNotFoundError(
-        "Google credentials не знайдено. "
-        "Встанови змінну GOOGLE_CREDENTIALS_B64 або поклади credentials.json в app/data/"
-    )
-
 
 def get_sheet():
-    gc = gspread.service_account(filename=_ensure_credentials())
+    """
+    Підключається до Google Sheets.
+
+    Пріоритет credentials:
+      1. GOOGLE_CREDENTIALS_JSON — вміст credentials.json як рядок (для Render)
+      2. app/data/credentials.json — локальний файл (для розробки)
+    """
+    creds_json = os.getenv("GOOGLE_CREDENTIALS_JSON")
+    if creds_json:
+        gc = gspread.service_account_from_dict(json.loads(creds_json))
+    else:
+        gc = gspread.service_account(filename="app/data/credentials.json")
+
     return gc.open(os.getenv("LOG_SHEET_NAME"))
 
 
