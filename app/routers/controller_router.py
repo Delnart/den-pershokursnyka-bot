@@ -75,6 +75,7 @@ async def cmd_start(message: types.Message):
 
 @router.callback_query(F.data.in_(["controller_hub", "controller_hub_new"]))
 async def cmd_back_hub(callback: types.CallbackQuery, state: FSMContext):
+    await callback.answer()
     try:
         await callback.message.edit_reply_markup(reply_markup=None)
     except Exception:
@@ -101,16 +102,8 @@ async def cmd_back_hub(callback: types.CallbackQuery, state: FSMContext):
         keyboard = kb.create_main_keyboard(is_existing_user=existing_user)
         text = WELCOME_TEXT + "\n\n<i>Ти ще не зареєстрований. Натисни кнопку нижче, щоб зареєструватись!</i>"
 
-    if callback.data == "controller_hub_new":
-        await safe_reply(
-            message=callback.message,
-            text=text,
-            reply_markup=keyboard.as_markup()
-        )
-    else:
-        await callback.message.answer(
-            text=text,
-            reply_markup=keyboard.as_markup()
-        )
-
-    await callback.answer()
+    await safe_reply(
+        message=callback.message,
+        text=text,
+        reply_markup=keyboard.as_markup()
+    )

@@ -153,12 +153,22 @@ async def save_text_field(message: types.Message, state: FSMContext):
         await message.delete()
     except Exception:
         pass
-    try:
-        await message.bot.delete_message(chat_id=message.chat.id, message_id=data.get("main_message_id"))
-    except Exception:
-        pass
 
     builder = InlineKeyboardBuilder()
     builder.button(text="Повернутися в профіль", callback_data="profile")
-    await message.answer("✅ Дані успішно оновлено!", reply_markup=builder.as_markup())
+    
+    main_message_id = data.get("main_message_id")
+    if main_message_id:
+        try:
+            await message.bot.edit_message_text(
+                chat_id=message.chat.id,
+                message_id=main_message_id,
+                text="✅ Дані успішно оновлено!",
+                reply_markup=builder.as_markup()
+            )
+        except Exception:
+            await message.answer("✅ Дані успішно оновлено!", reply_markup=builder.as_markup())
+    else:
+        await message.answer("✅ Дані успішно оновлено!", reply_markup=builder.as_markup())
+        
     await state.clear()

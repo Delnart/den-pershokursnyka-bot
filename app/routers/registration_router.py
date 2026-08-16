@@ -115,19 +115,26 @@ async def process_name(message: types.Message, state: FSMContext):
         await message.delete()
     except Exception:
         pass
-    if main_msg_id:
-        try:
-            await message.bot.delete_message(chat_id=message.chat.id, message_id=main_msg_id)
-        except Exception:
-            pass
 
-    new_msg = await message.answer(
+    text = (
         "[2/5] 📱 Введи свій юзернейм у Telegram\n"
         "Приклад: @username\n\n"
         "<i>Якщо у тебе немає юзернейму — введи «немає»</i>"
     )
 
-    await state.update_data(main_message_id=new_msg.message_id)
+    if main_msg_id:
+        try:
+            await message.bot.edit_message_text(
+                chat_id=message.chat.id,
+                message_id=main_msg_id,
+                text=text
+            )
+        except Exception:
+            new_msg = await message.answer(text)
+            await state.update_data(main_message_id=new_msg.message_id)
+    else:
+        new_msg = await message.answer(text)
+        await state.update_data(main_message_id=new_msg.message_id)
     await state.set_state(RegisterForm.entering_username)
 
 
@@ -152,23 +159,28 @@ async def process_username_input(message: types.Message, state: FSMContext):
         await message.delete()
     except Exception:
         pass
-    if main_msg_id:
-        try:
-            await message.bot.delete_message(chat_id=message.chat.id, message_id=main_msg_id)
-        except Exception:
-            pass
 
     builder = InlineKeyboardBuilder()
     builder.button(text="🎓 КПІ ім. Ігоря Сікорського", callback_data="uni_kpi")
     builder.button(text="🏫 Інший університет", callback_data="uni_other")
     builder.adjust(1)
+    
+    text = "[3/5] 🏛 Обери свій університет:"
 
-    new_msg = await message.answer(
-        "[3/5] 🏛 Обери свій університет:",
-        reply_markup=builder.as_markup()
-    )
-
-    await state.update_data(main_message_id=new_msg.message_id)
+    if main_msg_id:
+        try:
+            await message.bot.edit_message_text(
+                chat_id=message.chat.id,
+                message_id=main_msg_id,
+                text=text,
+                reply_markup=builder.as_markup()
+            )
+        except Exception:
+            new_msg = await message.answer(text, reply_markup=builder.as_markup())
+            await state.update_data(main_message_id=new_msg.message_id)
+    else:
+        new_msg = await message.answer(text, reply_markup=builder.as_markup())
+        await state.update_data(main_message_id=new_msg.message_id)
     await state.set_state(RegisterForm.choosing_university)
 
 
