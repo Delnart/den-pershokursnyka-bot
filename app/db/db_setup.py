@@ -8,9 +8,12 @@ from dotenv import load_dotenv
 
 load_dotenv()
 BD_ENGINE = os.getenv("BD_ENGINE")
+if not BD_ENGINE:
+    # Захист: якщо забули додати змінну в Render, падаємо з чіткою помилкою
+    raise ValueError("❌ ПОМИЛКА: Не встановлена змінна оточення BD_ENGINE (база даних)!")
+
 super_admins_env = os.getenv("SUPER_ADMINS", "")
 SUPER_ADMINS = [int(x.strip()) for x in super_admins_env.split(",") if x.strip()]
-
 # NullPool — обов'язково для Neon:
 # Neon авто-призупиняє compute після ~5 хв неактивності.
 # Стандартний QueuePool тримає з'єднання відкритими і падає з
