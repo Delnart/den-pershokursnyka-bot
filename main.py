@@ -7,6 +7,8 @@ from aiogram.client.default import DefaultBotProperties
 from aiogram.enums import ParseMode
 from app.db.db_setup import init_db
 
+from aiohttp import web
+
 import os
 from dotenv import load_dotenv
 
@@ -34,6 +36,26 @@ async def init_db_with_retry(retries: int = 5, delay: float = 3.0):
                 raise
 
 
+async def handle_ping(request):
+    """Простий endpoint для Render та UptimeRobot"""
+    return web.Response(text="Bot is alive!")
+
+
+async def start_web_server():
+    """Запускає веб-сервер aiohttp у фоні для Render"""
+    app = web.Application()
+    app.router.add_get('/', handle_ping)
+    app.router.add_get('/ping', handle_ping)
+    
+    runner = web.AppRunner(app)
+    await runner.setup()
+    
+    port = int(os.getenv("PORT", 8080))
+    site = web.TCPSite(runner, '0.0.0.0', port)
+    await site.start()
+    print(f"🌐 Web server started on port {port}")
+
+
 async def main():
     bot = Bot(
        token=BOT_TOKEN,
@@ -45,6 +67,9 @@ async def main():
 
     print("Ініціалізація БД...")
     await init_db_with_retry()
+
+    print("Запуск веб-сервера (для Render)...")
+    await start_web_server()
 
     print("Запуск бота...")
     await dp.start_polling(bot)
