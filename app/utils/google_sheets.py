@@ -7,6 +7,8 @@ from dotenv import load_dotenv
 load_dotenv()
 
 
+from datetime import datetime
+
 def get_sheet():
     """
     Підключається до Google Sheets.
@@ -34,9 +36,32 @@ async def add_user_to_sheet(tg_id: int, username: str, name: str,
                             university: str = None, faculty: str = None,
                             group_name: str = None):
     try:
-        row = [str(tg_id), username, name, university, faculty, group_name]
+        timestamp = datetime.now().strftime("%d.%m.%Y %H:%M:%S")
+        
+        # Формат колонок:
+        # A: Позначка часу
+        # B: ПІБ
+        # C: Юзернейм
+        # D: Університет
+        # E: Факультет
+        # F: Група
+        # G: Правила
+        # H: tg_id (потрібен боту для оновлення профілю)
+        row = [
+            timestamp, 
+            name, 
+            username, 
+            university, 
+            faculty, 
+            group_name, 
+            "Так", 
+            str(tg_id)
+        ]
         row = [item if item is not None else "" for item in row]
 
+        # Увага: Форма зазвичай пише у "Відповіді форми 1". Якщо ти хочеш 
+        # щоб бот писав туди ж, переконайся, що лист називається саме так. 
+        # Або можна залишити "Users".
         await asyncio.to_thread(_append_row_sync, "Users", row)
         print(f"✅ Користувача {name} успішно додано в Sheets!")
     except Exception as e:
@@ -47,11 +72,12 @@ def _update_user_sync(tg_id: str, field: str, new_value):
     sh = get_sheet()
     ws = sh.worksheet("Users")
     try:
-        cell = ws.find(str(tg_id), in_column=1)
+        # Шукаємо tg_id у 8-й колонці (H)
+        cell = ws.find(str(tg_id), in_column=8)
         if cell:
             col_map = {
-                "username":   "B",
-                "name":       "C",
+                "name":       "B",
+                "username":   "C",
                 "university": "D",
                 "faculty":    "E",
                 "group_name": "F",
