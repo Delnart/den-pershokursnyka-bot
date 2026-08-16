@@ -88,3 +88,39 @@ async def process_broadcast_message(message: types.Message, state: FSMContext):
         reply_markup=builder.as_markup()
     )
     await state.clear()
+
+
+from aiogram.filters import Command
+from app.utils.google_sheets import get_sheet
+
+@router.message(Command("testsheet"))
+async def test_google_sheets(message: types.Message):
+    if not await is_admin(message.from_user.id):
+        return
+        
+    await message.answer("🔄 Тестую підключення до Google Sheets...")
+    
+    try:
+        sh = get_sheet()
+        ws = sh.sheet1
+        title = ws.title
+        await message.answer(f"✅ Успіх!\nБот успішно підключився до таблиці.\nНазва першого аркуша: <b>{title}</b>", parse_mode="HTML")
+    except Exception as e:
+        error_msg = str(e)
+        if "SpreadsheetNotFound" in str(type(e)):
+            error_msg = (
+                "❌ <b>Помилка: Таблицю не знайдено (SpreadsheetNotFound)</b>\n\n"
+                "<i>Швидше за все, ти забув надати доступ сервісному акаунту до таблиці.</i>\n\n"
+                "<b>Як виправити:</b>\n"
+                "1. Відкрий JSON-файл `credentials.json`, знайди там поле `client_email`.\n"
+                "2. Скопіюй цей email (він закінчується на <code>@...iam.gserviceaccount.com</code>).\n"
+                "3. Відкрий свою Google Таблицю в браузері.\n"
+                "4. Натисни кнопку «Поділитися» (Share) у правому верхньому куті.\n"
+                "5. Встав цей email і дай йому права <b>Редактора</b>.\n"
+            )
+        elif "APIError" in str(type(e)):
+            error_msg = f"❌ <b>Помилка API:</b>\nПеревір чи увімкнено Google Sheets API та Google Drive API в Google Cloud Console.\nДеталі: {e}"
+        else:
+            error_msg = f"❌ <b>Невідома помилка:</b>\n<code>{type(e).__name__}: {e}</code>"
+            
+        await message.answer(error_msg, parse_mode="HTML")
