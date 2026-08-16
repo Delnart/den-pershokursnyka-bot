@@ -1,7 +1,12 @@
 import os
 from dotenv import load_dotenv
 load_dotenv()
-SHEET_URL = os.getenv("SHEET_URL")
+SHEET_URL = os.getenv("SHEET_URL", "")
+# Захист від того, що користувач ввів лише ID замість повного посилання
+if SHEET_URL and not SHEET_URL.startswith("http"):
+    SHEET_URL = f"https://docs.google.com/spreadsheets/d/{SHEET_URL}"
+if not SHEET_URL:
+    SHEET_URL = "https://docs.google.com/spreadsheets/"
 
 from app.data.bot_state import global_state
 from aiogram.utils.keyboard import InlineKeyboardBuilder
