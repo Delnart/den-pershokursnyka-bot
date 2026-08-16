@@ -51,7 +51,9 @@ async def add_user_to_sheet(tg_id: int, username: str, name: str,
                             university: str = None, faculty: str = None,
                             group_name: str = None):
     try:
-        timestamp = datetime.now().strftime("%d.%m.%Y %H:%M:%S")
+        from zoneinfo import ZoneInfo
+        kyiv_tz = ZoneInfo("Europe/Kyiv")
+        timestamp = datetime.now(kyiv_tz).strftime("%d.%m.%Y %H:%M:%S")
         
         # Формат колонок:
         # A: Позначка часу
