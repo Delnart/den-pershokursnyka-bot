@@ -12,6 +12,11 @@ if not BD_ENGINE:
     # Захист: якщо забули додати змінну в Render, падаємо з чіткою помилкою
     raise ValueError("❌ ПОМИЛКА: Не встановлена змінна оточення BD_ENGINE (база даних)!")
 
+# Якщо користувач скопіював стандартний URL з Neon (postgresql://...), 
+# автоматично замінюємо його на асинхронний драйвер (postgresql+asyncpg://...)
+if BD_ENGINE.startswith("postgresql://"):
+    BD_ENGINE = BD_ENGINE.replace("postgresql://", "postgresql+asyncpg://", 1)
+
 super_admins_env = os.getenv("SUPER_ADMINS", "")
 SUPER_ADMINS = [int(x.strip()) for x in super_admins_env.split(",") if x.strip()]
 # NullPool — обов'язково для Neon:
