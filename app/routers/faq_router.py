@@ -45,7 +45,18 @@ async def answer_faq(callback: types.CallbackQuery):
     if not answer:
         answer = "Ой! На жаль відповідь на це питання не знайдена."
 
+    import re
+    
     builder = InlineKeyboardBuilder()
+
+    mono_match = re.search(r'(https://send\.monobank\.ua/[^\s\n"\'<]+)', answer)
+    if mono_match:
+        builder.add(
+            types.InlineKeyboardButton(
+                text="Підтримати збір",
+                url=mono_match.group(1)
+            )
+        )
 
     builder.add(
         types.InlineKeyboardButton(
@@ -59,6 +70,8 @@ async def answer_faq(callback: types.CallbackQuery):
             callback_data="more_questions_faq"
         )
     )
+
+    builder.adjust(1)
 
     await callback.message.edit_text(answer, reply_markup=builder.as_markup(), parse_mode="HTML")
 
