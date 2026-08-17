@@ -12,7 +12,10 @@ from app.routers.registration_router import FACULTIES_KPI
 
 router = Router()
 
-KPI_GROUP_PATTERN = re.compile(r"^[А-ЯІЇЄҐа-яіїєґa-zA-Z]{2,4}[-\s—–]?[А-ЯІЇЄҐа-яіїєґa-zA-Z]*\d+[А-ЯІЇЄҐа-яіїєґa-zA-Z]*$", re.IGNORECASE)
+KPI_GROUP_PATTERN = re.compile(
+    r"^[А-ЯІЇЄҐа-яіїєґA-Za-z]{2,4}[-\u2014\u2013]?[а-яіїєґa-z]{0,2}\d{1,2}[а-яіїєґa-z]{0,2}$",
+    re.IGNORECASE
+)
 
 
 class ProfileForm:
