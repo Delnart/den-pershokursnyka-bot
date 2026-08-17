@@ -37,7 +37,7 @@ async def show_profile(callback: types.CallbackQuery, state: FSMContext):
         return
 
     text = (
-        f"👤 <b>ТВІЙ ПРОФІЛЬ</b>\n"
+        f"<b>ТВІЙ ПРОФІЛЬ</b>\n"
         f"───────────────\n"
         f"<b>ПІБ:</b> {user.name}\n"
         f"<b>Telegram:</b> {user.username}\n"
@@ -55,7 +55,7 @@ async def show_profile(callback: types.CallbackQuery, state: FSMContext):
     )
 
     builder = InlineKeyboardBuilder()
-    builder.button(text="⚙️ Змінити дані", callback_data="prof_edit_menu")
+    builder.button(text="Змінити дані", callback_data="prof_edit_menu")
     builder.button(text="Назад", callback_data="controller_hub_new")
     builder.adjust(1)
 
@@ -70,16 +70,16 @@ async def show_profile(callback: types.CallbackQuery, state: FSMContext):
 @router.callback_query(F.data == "prof_edit_menu")
 async def edit_profile_menu(callback: types.CallbackQuery):
     builder = InlineKeyboardBuilder()
-    builder.button(text="✏️ ПІБ", callback_data="edit_prof_name")
-    builder.button(text="✏️ Telegram", callback_data="edit_prof_username")
-    builder.button(text="✏️ Університет", callback_data="edit_prof_university")
-    builder.button(text="✏️ Факультет", callback_data="edit_prof_faculty")
-    builder.button(text="✏️ Група", callback_data="edit_prof_group")
+    builder.button(text="ПІБ", callback_data="edit_prof_name")
+    builder.button(text="Telegram", callback_data="edit_prof_username")
+    builder.button(text="Університет", callback_data="edit_prof_university")
+    builder.button(text="Факультет", callback_data="edit_prof_faculty")
+    builder.button(text="Група", callback_data="edit_prof_group")
     builder.button(text="Назад до профілю", callback_data="profile")
     builder.adjust(2, 2, 1, 1)
 
     await callback.message.edit_text(
-        "⚙️ <b>Що саме ти хочеш змінити?</b>",
+        "<b>Що саме ти хочеш змінити?</b>",
         reply_markup=builder.as_markup()
     )
     await callback.answer()

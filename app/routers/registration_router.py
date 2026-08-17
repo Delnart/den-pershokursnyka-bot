@@ -74,7 +74,7 @@ async def start_registration(callback: types.CallbackQuery, state: FSMContext):
 
     if existing_user:
         builder = InlineKeyboardBuilder()
-        builder.button(text="🪪 Перейти в профіль", callback_data="profile")
+        builder.button(text="Перейти в профіль", callback_data="profile")
         builder.button(text="Головне меню", callback_data="controller_hub")
         builder.adjust(1)
 
@@ -92,7 +92,7 @@ async def start_registration(callback: types.CallbackQuery, state: FSMContext):
         pass
 
     text = (
-        "[1/5] 👤 Введи твоє ПІБ\n"
+        "[1/5] Введи твоє ПІБ\n"
         "Приклад: Шевченко Тарас Григорович\n\n"
         "<i>*після підтвердження реєстрації дані можна змінити в профілі</i>"
     )
@@ -125,11 +125,11 @@ async def process_name(message: types.Message, state: FSMContext):
         await state.update_data(tg_username=f"@{message.from_user.username}")
         
         builder = InlineKeyboardBuilder()
-        builder.button(text="🎓 КПІ ім. Ігоря Сікорського", callback_data="uni_kpi")
-        builder.button(text="🏫 Інший університет", callback_data="uni_other")
+        builder.button(text="КПІ ім. Ігоря Сікорського", callback_data="uni_kpi")
+        builder.button(text="Інший університет", callback_data="uni_other")
         builder.adjust(1)
         
-        text = "🏛 Обери свій університет (Крок 2 з 4):"
+        text = "Обери свій університет (Крок 2 з 4):"
         
         if main_msg_id:
             try:
@@ -151,7 +151,7 @@ async def process_name(message: types.Message, state: FSMContext):
     else:
         # Юзернейму немає — запитуємо вручну
         text = (
-            "📱 Введи свій юзернейм (або телефон/інстаграм) для зв'язку\n"
+            "Введи свій юзернейм (або телефон/інстаграм) для зв'язку\n"
             "Приклад: @username\n\n"
             "<i>(Оскільки у тебе не встановлений юзернейм в налаштуваннях Telegram, ми запитуємо контактні дані вручну. "
             "Якщо не хочеш нічого вказувати — введи «немає».)</i>"
@@ -197,11 +197,11 @@ async def process_username_input(message: types.Message, state: FSMContext):
         pass
 
     builder = InlineKeyboardBuilder()
-    builder.button(text="🎓 КПІ ім. Ігоря Сікорського", callback_data="uni_kpi")
-    builder.button(text="🏫 Інший університет", callback_data="uni_other")
+    builder.button(text="КПІ ім. Ігоря Сікорського", callback_data="uni_kpi")
+    builder.button(text="Інший університет", callback_data="uni_other")
     builder.adjust(1)
     
-    text = "🏛 Обери свій університет (Крок 2 з 4):"
+    text = "Обери свій університет (Крок 2 з 4):"
 
     if main_msg_id:
         try:
@@ -233,18 +233,18 @@ async def process_university_choice(callback: types.CallbackQuery, state: FSMCon
         builder = InlineKeyboardBuilder()
         for fac in FACULTIES_KPI:
             builder.button(text=fac, callback_data=f"fac_{fac}")
-        builder.button(text="🏫 Інший факультет", callback_data="fac_other")
+        builder.button(text="Інший факультет", callback_data="fac_other")
         builder.adjust(3)
 
         await callback.message.edit_text(
-            "[4/5] 🏛 Обери свій факультет:",
+            "[4/5] Обери свій факультет:",
             reply_markup=builder.as_markup()
         )
         await state.set_state(RegisterForm.choosing_faculty_kpi)
 
     elif choice == "uni_other":
         await callback.message.edit_text(
-            "[3/5] 🏫 Введи назву свого університету:"
+            "[3/5] Введи назву свого університету:"
         )
         await state.set_state(RegisterForm.entering_university_other)
 
@@ -258,7 +258,7 @@ async def process_kpi_faculty_choice(callback: types.CallbackQuery, state: FSMCo
     choice = callback.data
 
     if choice == "fac_other":
-        await callback.message.edit_text("[4/5] 🏛 Введи назву свого факультету:")
+        await callback.message.edit_text("[4/5] Введи назву свого факультету:")
         await state.set_state(RegisterForm.entering_faculty_text_kpi)
     else:
         faculty_name = choice.replace("fac_", "")
@@ -268,7 +268,7 @@ async def process_kpi_faculty_choice(callback: types.CallbackQuery, state: FSMCo
         builder.button(text="Не знаю шифру (Першокурсник)", callback_data="group_unknown")
         
         await callback.message.edit_text(
-            "[5/5] 👥 Введи свою групу\nПриклад: ІА-11",
+            "[5/5] Введи свою групу\nПриклад: ІА-11",
             reply_markup=builder.as_markup()
         )
         await state.set_state(RegisterForm.entering_group_kpi)
@@ -285,7 +285,7 @@ async def process_kpi_faculty_text(message: types.Message, state: FSMContext):
     
     builder = InlineKeyboardBuilder()
     builder.button(text="Не знаю шифру (Першокурсник)", callback_data="group_unknown")
-    text = "[5/5] 👥 Введи свою групу\nПриклад: ІА-11"
+    text = "[5/5] Введи свою групу\nПриклад: ІА-11"
     
     try:
         await message.delete()
@@ -386,16 +386,16 @@ async def show_confirmation_screen(event: types.CallbackQuery, state: FSMContext
     group = data.get('group')
 
     confirmation_text = (
-        f"📋 <b>Перевір свої дані перед підтвердженням:</b>\n\n"
-        f"👤 <b>ПІБ:</b> {name}\n"
-        f"📱 <b>Telegram:</b> {tg_username}\n"
-        f"🎓 <b>Університет:</b> {university}\n"
+        f"<b>Перевір свої дані перед підтвердженням:</b>\n\n"
+        f"<b>ПІБ:</b> {name}\n"
+        f"<b>Telegram:</b> {tg_username}\n"
+        f"<b>Університет:</b> {university}\n"
     )
     
     if faculty and faculty != "-":
-        confirmation_text += f"🏛 <b>Факультет:</b> {faculty}\n"
+        confirmation_text += f"<b>Факультет:</b> {faculty}\n"
     if group and group != "-":
-        confirmation_text += f"👥 <b>Група:</b> {group}\n"
+        confirmation_text += f"<b>Група:</b> {group}\n"
         
     confirmation_text += "\nУсе правильно? Натисни підтвердити або скасуй реєстрацію."
 
@@ -442,7 +442,7 @@ async def confirm_registration(callback: types.CallbackQuery, state: FSMContext)
         ))
 
         builder = InlineKeyboardBuilder()
-        builder.button(text="🪪 Мій профіль", callback_data="profile")
+        builder.button(text="Мій профіль", callback_data="profile")
         builder.button(text="Головне меню", callback_data="controller_hub")
         builder.adjust(1)
 

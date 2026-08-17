@@ -73,7 +73,12 @@ async def answer_faq(callback: types.CallbackQuery):
 
     builder.adjust(1)
 
-    await callback.message.edit_text(answer, reply_markup=builder.as_markup(), parse_mode="HTML")
+    await callback.message.edit_text(
+        answer, 
+        reply_markup=builder.as_markup(), 
+        parse_mode="HTML", 
+        disable_web_page_preview=True
+    )
 
 
 @router.callback_query(F.data == "more_questions_faq")
