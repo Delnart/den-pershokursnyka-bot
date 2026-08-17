@@ -9,14 +9,16 @@ load_dotenv()
 
 from datetime import datetime
 
+_cached_sheet = None
+
 def get_sheet():
     """
     Підключається до Google Sheets.
-
-    Пріоритет credentials:
-      1. GOOGLE_CREDENTIALS_JSON — вміст credentials.json як рядок (для Render)
-      2. app/data/credentials.json — локальний файл (для розробки)
     """
+    global _cached_sheet
+    if _cached_sheet is not None:
+        return _cached_sheet
+
     creds_json = os.getenv("GOOGLE_CREDENTIALS_JSON")
     if creds_json:
         gc = gspread.service_account_from_dict(json.loads(creds_json))
@@ -26,18 +28,18 @@ def get_sheet():
     sheet_url_or_id = os.getenv("SHEET_URL", "")
     
     if not sheet_url_or_id:
-        # Резервний варіант, якщо SHEET_URL раптом пустий (на всяк випадок)
-        return gc.open(os.getenv("LOG_SHEET_NAME"))
+        _cached_sheet = gc.open(os.getenv("LOG_SHEET_NAME"))
+        return _cached_sheet
         
     try:
-        # Якщо користувач ввів лише ID (наприклад 11HUlPn4...)
         if not sheet_url_or_id.startswith("http"):
-            return gc.open_by_key(sheet_url_or_id)
+            _cached_sheet = gc.open_by_key(sheet_url_or_id)
         else:
-            return gc.open_by_url(sheet_url_or_id)
+            _cached_sheet = gc.open_by_url(sheet_url_or_id)
     except gspread.exceptions.SpreadsheetNotFound:
-        # Якщо і це не спрацювало, спробуємо по старинці через назву
-        return gc.open(os.getenv("LOG_SHEET_NAME"))
+        _cached_sheet = gc.open(os.getenv("LOG_SHEET_NAME"))
+
+    return _cached_sheet
 
 
 def _append_row_sync(row_data: list):

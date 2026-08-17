@@ -1,7 +1,7 @@
 from sqlalchemy.ext.asyncio import create_async_engine
 from sqlalchemy import MetaData, Table, Column, BigInteger, String, Boolean
 from sqlalchemy import select, insert
-from sqlalchemy.pool import NullPool
+
 
 import os
 from dotenv import load_dotenv
@@ -28,15 +28,15 @@ BD_ENGINE = re.sub(r'([?&])channel_binding=[^&]+(?:&|$)', r'\1', BD_ENGINE).rstr
 
 super_admins_env = os.getenv("SUPER_ADMINS", "")
 SUPER_ADMINS = [int(x.strip()) for x in super_admins_env.split(",") if x.strip()]
-# NullPool — обов'язково для Neon:
-# Neon авто-призупиняє compute після ~5 хв неактивності.
-# Стандартний QueuePool тримає з'єднання відкритими і падає з
-# "SSL connection has been closed unexpectedly" після wakeup.
-# NullPool відкриває нове з'єднання на кожну операцію і відразу закриває.
+# Використовуємо стандартний пул з pool_pre_ping=True.
+# Це дозволяє зберігати з'єднання відкритими для швидкості (немає затримок на підключення),
+# але перед кожним запитом SQLAlchemy перевіряє, чи живе з'єднання.
+# Якщо Neon призупинив роботу і розірвав з'єднання, воно буде автоматично перепідключено.
 engine = create_async_engine(
     BD_ENGINE,
     echo=False,
-    poolclass=NullPool,
+    pool_pre_ping=True,
+    pool_recycle=300,
 )
 meta = MetaData()
 
