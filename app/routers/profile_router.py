@@ -8,6 +8,8 @@ from app.utils.google_sheets import update_user_in_sheet
 import asyncio
 import re
 
+from app.routers.registration_router import FACULTIES_KPI
+
 router = Router()
 
 KPI_GROUP_PATTERN = re.compile(r"^[А-ЯІЇЄҐа-яіїєґa-zA-Z]{2,4}[-\s—–]?[А-ЯІЇЄҐа-яіїєґa-zA-Z]*\d+[А-ЯІЇЄҐа-яіїєґa-zA-Z]*$", re.IGNORECASE)
@@ -72,14 +74,28 @@ async def show_profile(callback: types.CallbackQuery, state: FSMContext):
 
 @router.callback_query(F.data == "prof_edit_menu")
 async def edit_profile_menu(callback: types.CallbackQuery):
+    user = await get_user(callback.from_user.id)
+    if not user:
+        await callback.answer("Помилка: юзера не знайдено.")
+        return
+
+    is_kpi = "КПІ" in user.university.upper() or "СІКОРСЬКОГО" in user.university.upper()
+
     builder = InlineKeyboardBuilder()
     builder.button(text="ПІБ", callback_data="edit_prof_name")
     builder.button(text="Telegram", callback_data="edit_prof_username")
     builder.button(text="Університет", callback_data="edit_prof_university")
-    builder.button(text="Факультет", callback_data="edit_prof_faculty")
-    builder.button(text="Група", callback_data="edit_prof_group")
+    
+    if is_kpi:
+        builder.button(text="Факультет", callback_data="edit_prof_faculty")
+        builder.button(text="Група", callback_data="edit_prof_group")
+        
     builder.button(text="Назад до профілю", callback_data="profile")
-    builder.adjust(2, 2, 1, 1)
+    
+    if is_kpi:
+        builder.adjust(2, 2, 1, 1)
+    else:
+        builder.adjust(2, 1, 1)
 
     await callback.message.edit_text(
         "<b>Що саме ти хочеш змінити?</b>",
@@ -114,10 +130,47 @@ async def start_edit_text_field(callback: types.CallbackQuery, state: FSMContext
     await state.set_state(target_state)
 
     builder = InlineKeyboardBuilder()
-    builder.button(text="Скасувати", callback_data="prof_edit_menu")
+    
+    if field == "faculty":
+        user = await get_user(callback.from_user.id)
+        if user and ("КПІ" in user.university.upper() or "СІКОРСЬКОГО" in user.university.upper()):
+            for fac in FACULTIES_KPI:
+                builder.button(text=fac, callback_data=f"prof_fac_{fac}")
+            builder.button(text="Інший факультет", callback_data="prof_fac_other")
+            builder.button(text="Скасувати", callback_data="prof_edit_menu")
+            builder.adjust(3)
+            prompt = "Обери свій факультет:"
+        else:
+            builder.button(text="Скасувати", callback_data="prof_edit_menu")
+            builder.adjust(1)
+    else:
+        builder.button(text="Скасувати", callback_data="prof_edit_menu")
+        builder.adjust(1)
 
     new_msg = await callback.message.edit_text(prompt, reply_markup=builder.as_markup())
     await state.update_data(main_message_id=new_msg.message_id)
+    await callback.answer()
+
+
+@router.callback_query(ProfileEditForm.waiting_for_new_faculty, F.data.startswith("prof_fac_"))
+async def process_prof_kpi_faculty_choice(callback: types.CallbackQuery, state: FSMContext):
+    choice = callback.data.replace("prof_fac_", "")
+    
+    if choice == "other":
+        builder = InlineKeyboardBuilder()
+        builder.button(text="Скасувати", callback_data="prof_edit_menu")
+        await callback.message.edit_text("Введи назву свого факультету:", reply_markup=builder.as_markup())
+        # state stays waiting_for_new_faculty
+    else:
+        await update_user_field(callback.from_user.id, "faculty", choice)
+        asyncio.create_task(update_user_in_sheet(tg_id=callback.from_user.id, field="faculty", new_value=choice))
+        
+        builder = InlineKeyboardBuilder()
+        builder.button(text="Повернутися в профіль", callback_data="profile")
+        
+        await callback.message.edit_text("✅ Дані успішно оновлено!", reply_markup=builder.as_markup())
+        await state.clear()
+        
     await callback.answer()
 
 
