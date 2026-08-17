@@ -24,8 +24,8 @@ router.include_routers(
 )
 
 EVENT_INFO = (
-    "📅 <b>31 серпня</b> | ⏰ 17:00–22:00\n"
-    "📍 вул. Політехнічна (біля 18 корпусу КПІ)"
+    "📅 <b>31 серпня</b>\n"
+    "📍 <a href='https://maps.app.goo.gl/Ufs7Pb8KbZ7v7tNA8'>вул. Політехнічна (біля 18 корпусу КПІ)</a>"
 )
 
 WELCOME_TEXT = (
