@@ -92,9 +92,9 @@ async def start_edit_text_field(callback: types.CallbackQuery, state: FSMContext
     prompts = {
         "name":       "Введи нове ПІБ:\nПриклад: Шевченко Тарас Григорович",
         "username":   "Введи новий юзернейм у Telegram:\nПриклад: @username",
-        "university": "Введи назву свого університету:\nПриклад: КНУ",
+        "university": "Введи назву свого університету:\nПриклад: КПІ ім. Ігоря Сікорського",
         "faculty":    "Введи новий факультет або напрям:\nПриклад: ФІОТ",
-        "group":      "Введи нову групу або курс:\nПриклад: ІА-11",
+        "group":      "Введи нову групу або курс:\nПриклад: ІП-55",
     }
 
     states = {
@@ -151,6 +151,14 @@ async def save_text_field(message: types.Message, state: FSMContext):
         field=field_to_update,
         new_value=input_text
     ))
+    
+    # Якщо змінили університет на не-КПІ, скидаємо факультет та групу
+    if field_to_update == "university":
+        if "КПІ" not in input_text.upper() and "СІКОРСЬКОГО" not in input_text.upper():
+            await update_user_field(message.from_user.id, "faculty", "-")
+            await update_user_field(message.from_user.id, "group_name", "-")
+            asyncio.create_task(update_user_in_sheet(message.from_user.id, "faculty", "-"))
+            asyncio.create_task(update_user_in_sheet(message.from_user.id, "group_name", "-"))
 
     data = await state.get_data()
 
