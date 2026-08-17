@@ -316,66 +316,23 @@ async def process_kpi_group(message: types.Message, state: FSMContext):
 
 @router.message(RegisterForm.entering_university_other, F.text)
 async def process_other_university(message: types.Message, state: FSMContext):
-    await state.update_data(university=message.text.strip())
+    await state.update_data(
+        university=message.text.strip(),
+        faculty="-",
+        group="-"
+    )
 
-    data = await state.get_data()
-    main_msg_id = data.get("main_message_id")
-    text = "[4/5] 🏛 Введи назву свого факультету / напряму:"
-
-    try:
-        await message.delete()
-        await message.bot.edit_message_text(
-            chat_id=message.chat.id,
-            message_id=main_msg_id,
-            text=text
-        )
-    except Exception:
-        new_msg = await message.answer(text)
-        await state.update_data(main_message_id=new_msg.message_id)
-
-    await state.set_state(RegisterForm.entering_faculty_other)
-
-
-@router.message(RegisterForm.entering_faculty_other, F.text)
-async def process_other_faculty(message: types.Message, state: FSMContext):
-    await state.update_data(faculty=message.text.strip())
-
-    data = await state.get_data()
-    main_msg_id = data.get("main_message_id")
-    text = "[5/5] 👥 Введи свою групу або курс:"
-    
-    builder = InlineKeyboardBuilder()
-    builder.button(text="Не знаю (Першокурсник)", callback_data="group_unknown")
-
-    try:
-        await message.delete()
-        await message.bot.edit_message_text(
-            chat_id=message.chat.id,
-            message_id=main_msg_id,
-            text=text,
-            reply_markup=builder.as_markup()
-        )
-    except Exception:
-        new_msg = await message.answer(text, reply_markup=builder.as_markup())
-        await state.update_data(main_message_id=new_msg.message_id)
-
-    await state.set_state(RegisterForm.entering_group_other)
-
-
-@router.message(RegisterForm.entering_group_other, F.text)
-async def process_other_group(message: types.Message, state: FSMContext):
-    await state.update_data(group=message.text.strip().upper())
     try:
         await message.delete()
     except Exception:
         pass
+
     await ask_for_rules(message, state)
 
 
 # ==================== ПРАВИЛА ЗАХОДУ ====================
 
 @router.callback_query(RegisterForm.entering_group_kpi, F.data == "group_unknown")
-@router.callback_query(RegisterForm.entering_group_other, F.data == "group_unknown")
 async def process_unknown_group(callback: types.CallbackQuery, state: FSMContext):
     await state.update_data(group="Не знаю (Першокурсник)")
     await ask_for_rules(callback, state)
