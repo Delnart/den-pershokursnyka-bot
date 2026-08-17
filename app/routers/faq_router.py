@@ -49,7 +49,7 @@ async def answer_faq(callback: types.CallbackQuery):
     
     builder = InlineKeyboardBuilder()
 
-    mono_match = re.search(r'(https://send\.monobank\.ua/[^\s\n"\'<]+)', answer)
+    mono_match = re.search(r'href=["\']?(https://send\.monobank\.ua/[^"\'<\s]+)', answer)
     if mono_match:
         builder.add(
             types.InlineKeyboardButton(

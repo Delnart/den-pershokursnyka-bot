@@ -494,7 +494,7 @@ async def confirm_registration(callback: types.CallbackQuery, state: FSMContext)
                 "🎉 <b>Реєстрацію підтверджено!</b>\n\n"
                 "Твої дані збережено. Чекаємо тебе на <b>Дні Першокурсника</b>!\n\n"
                 "📅 <b>Коли:</b> 31 серпня\n"
-                f"📍 <b>Де:</b> <a href='https://maps.app.goo.gl/wMJsF7BiBfPb5RAKA'>вул. Політехнічна (біля 18 корпусу)</a>\n\n"
+                f"📍 <b>Де:</b> <a href='https://maps.app.goo.gl/Ufs7Pb8KbZ7v7tNA8'>вул. Політехнічна (біля 18 корпусу)</a>\n\n"
                 "Слідкуйте за оновленнями та актуальною інформацією про захід на каналі "
                 "<a href='https://t.me/fice_time'>FICE Time 🇺🇦</a>\n\n"
                 "💙 Будемо вдячні за донат на підтримку Сил оборони:\n"
