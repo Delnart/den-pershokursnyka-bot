@@ -116,21 +116,31 @@ async def start_registration(callback: types.CallbackQuery, state: FSMContext):
 
 @router.message(RegisterForm.entering_name, F.text)
 async def process_name(message: types.Message, state: FSMContext):
-    name_text = message.text.strip()
-    words = name_text.split()
-    
-    if len(words) > 3:
-        await message.answer("❌ Будь ласка, введи ПІБ (не більше 3 слів).\nПриклад: Шевченко Тарас Григорович")
-        return
-        
-    await state.update_data(name=name_text)
     data = await state.get_data()
-    main_msg_id = data.get("main_message_id")
+    err_msg_id = data.get("error_msg_id")
+    if err_msg_id:
+        try:
+            await message.bot.delete_message(message.chat.id, err_msg_id)
+            await state.update_data(error_msg_id=None)
+        except Exception:
+            pass
 
     try:
         await message.delete()
     except Exception:
         pass
+
+    name_text = message.text.strip()
+    words = name_text.split()
+    
+    if len(words) > 3:
+        err_msg = await message.answer("❌ Будь ласка, введи ПІБ (не більше 3 слів).\nПриклад: Шевченко Тарас Григорович")
+        await state.update_data(error_msg_id=err_msg.message_id)
+        return
+        
+    await state.update_data(name=name_text)
+    data = await state.get_data()
+    main_msg_id = data.get("main_message_id")
 
     if message.from_user.username:
         # Юзернейм є — пропускаємо цей крок і переходимо до вибору університету
@@ -316,17 +326,28 @@ async def process_kpi_faculty_text(message: types.Message, state: FSMContext):
 
 @router.message(RegisterForm.entering_group_kpi, F.text)
 async def process_kpi_group(message: types.Message, state: FSMContext):
-    group_text = message.text.strip().upper()
-    
-    if not KPI_GROUP_PATTERN.match(group_text):
-        await message.answer("❌ Некоректний формат групи. Введи у форматі, наприклад: ІП-55 або АС-з61мп")
-        return
-        
-    await state.update_data(group=group_text)
+    data = await state.get_data()
+    err_msg_id = data.get("error_msg_id")
+    if err_msg_id:
+        try:
+            await message.bot.delete_message(message.chat.id, err_msg_id)
+            await state.update_data(error_msg_id=None)
+        except Exception:
+            pass
+
     try:
         await message.delete()
     except Exception:
         pass
+
+    group_text = message.text.strip().upper()
+    
+    if not KPI_GROUP_PATTERN.match(group_text):
+        err_msg = await message.answer("❌ Некоректний формат групи. Введи у форматі, наприклад: ІП-55 або АС-з61мп")
+        await state.update_data(error_msg_id=err_msg.message_id)
+        return
+        
+    await state.update_data(group=group_text)
     await ask_for_rules(message, state)
 
 

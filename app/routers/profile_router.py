@@ -180,6 +180,20 @@ async def process_prof_kpi_faculty_choice(callback: types.CallbackQuery, state: 
 @router.message(ProfileEditForm.waiting_for_new_faculty, F.text)
 @router.message(ProfileEditForm.waiting_for_new_group, F.text)
 async def save_text_field(message: types.Message, state: FSMContext):
+    data = await state.get_data()
+    err_msg_id = data.get("error_msg_id")
+    if err_msg_id:
+        try:
+            await message.bot.delete_message(message.chat.id, err_msg_id)
+            await state.update_data(error_msg_id=None)
+        except Exception:
+            pass
+
+    try:
+        await message.delete()
+    except Exception:
+        pass
+
     current_state = await state.get_state()
 
     state_to_field = {
@@ -194,7 +208,8 @@ async def save_text_field(message: types.Message, state: FSMContext):
 
     if field_to_update == "name":
         if len(input_text.split()) > 3:
-            await message.answer("❌ Будь ласка, введи ПІБ (не більше 3 слів).\nПриклад: Шевченко Тарас Григорович")
+            err_msg = await message.answer("❌ Будь ласка, введи ПІБ (не більше 3 слів).\nПриклад: Шевченко Тарас Григорович")
+            await state.update_data(error_msg_id=err_msg.message_id)
             return
 
     # Нормалізуємо юзернейм
@@ -209,7 +224,8 @@ async def save_text_field(message: types.Message, state: FSMContext):
         user = await get_user(message.from_user.id)
         if user and "КПІ" in user.university.upper() and input_text != "-":
             if not KPI_GROUP_PATTERN.match(input_text):
-                await message.answer("❌ Некоректний формат групи. Введи у форматі, наприклад: ІП-55 або АС-з61мп")
+                err_msg = await message.answer("❌ Некоректний формат групи. Введи у форматі, наприклад: ІП-55 або АС-з61мп")
+                await state.update_data(error_msg_id=err_msg.message_id)
                 return
 
     await update_user_field(message.from_user.id, field_to_update, input_text)
@@ -229,11 +245,6 @@ async def save_text_field(message: types.Message, state: FSMContext):
             asyncio.create_task(update_user_in_sheet(message.from_user.id, "group_name", "-"))
 
     data = await state.get_data()
-
-    try:
-        await message.delete()
-    except Exception:
-        pass
 
     builder = InlineKeyboardBuilder()
     builder.button(text="Повернутися в профіль", callback_data="profile")
