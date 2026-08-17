@@ -390,10 +390,14 @@ async def show_confirmation_screen(event: types.CallbackQuery, state: FSMContext
         f"👤 <b>ПІБ:</b> {name}\n"
         f"📱 <b>Telegram:</b> {tg_username}\n"
         f"🎓 <b>Університет:</b> {university}\n"
-        f"🏛 <b>Факультет:</b> {faculty}\n"
-        f"👥 <b>Група:</b> {group}\n\n"
-        f"Усе правильно? Натисни підтвердити або скасуй реєстрацію."
     )
+    
+    if faculty and faculty != "-":
+        confirmation_text += f"🏛 <b>Факультет:</b> {faculty}\n"
+    if group and group != "-":
+        confirmation_text += f"👥 <b>Група:</b> {group}\n"
+        
+    confirmation_text += "\nУсе правильно? Натисни підтвердити або скасуй реєстрацію."
 
     builder = InlineKeyboardBuilder()
     builder.button(text="✅ Підтвердити реєстрацію", callback_data="confirm_registration")

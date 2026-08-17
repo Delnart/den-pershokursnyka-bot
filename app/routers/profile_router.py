@@ -42,8 +42,13 @@ async def show_profile(callback: types.CallbackQuery, state: FSMContext):
         f"<b>ПІБ:</b> {user.name}\n"
         f"<b>Telegram:</b> {user.username}\n"
         f"<b>Університет:</b> {user.university}\n"
-        f"<b>Факультет:</b> {user.faculty}\n"
-        f"<b>Група:</b> {user.group_name}\n"
+    )
+    if user.faculty and user.faculty != "-":
+        text += f"<b>Факультет:</b> {user.faculty}\n"
+    if user.group_name and user.group_name != "-":
+        text += f"<b>Група:</b> {user.group_name}\n"
+        
+    text += (
         f"───────────────\n"
         f"📅 <b>31 серпня | 17:00–22:00</b>\n"
         f"📍 вул. Політехнічна (біля 18 корпусу)"
