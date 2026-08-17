@@ -6,8 +6,11 @@ from app.db.db_requests import get_user, update_user_field
 from app.utils.google_sheets import update_user_in_sheet
 
 import asyncio
+import re
 
 router = Router()
+
+KPI_GROUP_PATTERN = re.compile(r"^[А-ЯІЇЄҐа-яіїєґa-zA-Z]{2,4}[-\s—–]?[А-ЯІЇЄҐа-яіїєґa-zA-Z]*\d+[А-ЯІЇЄҐа-яіїєґa-zA-Z]*$", re.IGNORECASE)
 
 
 class ProfileForm:
@@ -136,6 +139,11 @@ async def save_text_field(message: types.Message, state: FSMContext):
     field_to_update = state_to_field.get(current_state)
     input_text = message.text.strip()
 
+    if field_to_update == "name":
+        if len(input_text.split()) > 3:
+            await message.answer("❌ Будь ласка, введи ПІБ (не більше 3 слів).\nПриклад: Шевченко Тарас Григорович")
+            return
+
     # Нормалізуємо юзернейм
     if field_to_update == "username":
         if input_text.lower() != "немає" and not input_text.startswith("@"):
@@ -143,6 +151,13 @@ async def save_text_field(message: types.Message, state: FSMContext):
 
     if field_to_update in ["faculty", "group_name"]:
         input_text = input_text.upper()
+        
+    if field_to_update == "group_name":
+        user = await get_user(message.from_user.id)
+        if user and "КПІ" in user.university.upper() and input_text != "-":
+            if not KPI_GROUP_PATTERN.match(input_text):
+                await message.answer("❌ Некоректний формат групи. Введи у форматі, наприклад: ІП-55 або АС-з61мп")
+                return
 
     await update_user_field(message.from_user.id, field_to_update, input_text)
 

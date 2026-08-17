@@ -10,10 +10,14 @@ from app.db.db_requests import add_user, get_user
 import asyncio
 import logging
 import os
+import re
 from dotenv import load_dotenv
 
 load_dotenv()
 router = Router()
+
+KPI_GROUP_PATTERN = re.compile(r"^[А-ЯІЇЄҐа-яіїєґa-zA-Z]{2,4}[-\s—–]?[А-ЯІЇЄҐа-яіїєґa-zA-Z]*\d+[А-ЯІЇЄҐа-яіїєґa-zA-Z]*$", re.IGNORECASE)
+
 
 FACULTIES_KPI = [
     "ФМФ", "ФЕЛ", "ФІОТ", "ФТІ", "ХТФ", "ІХФ", "ФБТ",
@@ -111,7 +115,14 @@ async def start_registration(callback: types.CallbackQuery, state: FSMContext):
 
 @router.message(RegisterForm.entering_name, F.text)
 async def process_name(message: types.Message, state: FSMContext):
-    await state.update_data(name=message.text.strip())
+    name_text = message.text.strip()
+    words = name_text.split()
+    
+    if len(words) > 3:
+        await message.answer("❌ Будь ласка, введи ПІБ (не більше 3 слів).\nПриклад: Шевченко Тарас Григорович")
+        return
+        
+    await state.update_data(name=name_text)
     data = await state.get_data()
     main_msg_id = data.get("main_message_id")
 
@@ -268,7 +279,7 @@ async def process_kpi_faculty_choice(callback: types.CallbackQuery, state: FSMCo
         builder.button(text="Не знаю шифру (Першокурсник)", callback_data="group_unknown")
         
         await callback.message.edit_text(
-            "[5/5] Введи свою групу\nПриклад: ІА-11",
+            "[5/5] Введи свою групу\nПриклад: ІП-55",
             reply_markup=builder.as_markup()
         )
         await state.set_state(RegisterForm.entering_group_kpi)
@@ -285,7 +296,7 @@ async def process_kpi_faculty_text(message: types.Message, state: FSMContext):
     
     builder = InlineKeyboardBuilder()
     builder.button(text="Не знаю шифру (Першокурсник)", callback_data="group_unknown")
-    text = "[5/5] Введи свою групу\nПриклад: ІА-11"
+    text = "[5/5] Введи свою групу\nПриклад: ІП-55"
     
     try:
         await message.delete()
@@ -304,7 +315,13 @@ async def process_kpi_faculty_text(message: types.Message, state: FSMContext):
 
 @router.message(RegisterForm.entering_group_kpi, F.text)
 async def process_kpi_group(message: types.Message, state: FSMContext):
-    await state.update_data(group=message.text.strip().upper())
+    group_text = message.text.strip().upper()
+    
+    if not KPI_GROUP_PATTERN.match(group_text):
+        await message.answer("❌ Некоректний формат групи. Введи у форматі, наприклад: ІП-55 або АС-з61мп")
+        return
+        
+    await state.update_data(group=group_text)
     try:
         await message.delete()
     except Exception:
