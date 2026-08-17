@@ -92,9 +92,9 @@ async def start_edit_text_field(callback: types.CallbackQuery, state: FSMContext
     prompts = {
         "name":       "Введи нове ПІБ:\nПриклад: Шевченко Тарас Григорович",
         "username":   "Введи новий юзернейм у Telegram:\nПриклад: @username",
-        "university": "Введи назву свого університету:",
-        "faculty":    "Введи новий факультет або напрям:",
-        "group":      "Введи нову групу або курс:",
+        "university": "Введи назву свого університету:\nПриклад: КНУ",
+        "faculty":    "Введи новий факультет або напрям:\nПриклад: ФІОТ",
+        "group":      "Введи нову групу або курс:\nПриклад: ІА-11",
     }
 
     states = {

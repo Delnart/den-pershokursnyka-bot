@@ -61,13 +61,13 @@ async def answer_faq(callback: types.CallbackQuery):
     builder.add(
         types.InlineKeyboardButton(
             text="Назад",
-            callback_data="controller_hub"
+            callback_data="handle_questions"
         )
     )
     builder.add(
         types.InlineKeyboardButton(
-            text="Інше питання",
-            callback_data="more_questions_faq"
+            text="Головне меню",
+            callback_data="controller_hub"
         )
     )
 
