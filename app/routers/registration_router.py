@@ -263,8 +263,13 @@ async def process_kpi_faculty_choice(callback: types.CallbackQuery, state: FSMCo
     else:
         faculty_name = choice.replace("fac_", "")
         await state.update_data(faculty=faculty_name)
+        
+        builder = InlineKeyboardBuilder()
+        builder.button(text="Не знаю шифру (Першокурсник)", callback_data="group_unknown")
+        
         await callback.message.edit_text(
-            "[5/5] 👥 Введи свою групу\nПриклад: ІА-11"
+            "[5/5] 👥 Введи свою групу\nПриклад: ІА-11",
+            reply_markup=builder.as_markup()
         )
         await state.set_state(RegisterForm.entering_group_kpi)
 
@@ -277,15 +282,21 @@ async def process_kpi_faculty_text(message: types.Message, state: FSMContext):
 
     data = await state.get_data()
     main_msg_id = data.get("main_message_id")
+    
+    builder = InlineKeyboardBuilder()
+    builder.button(text="Не знаю шифру (Першокурсник)", callback_data="group_unknown")
+    text = "[5/5] 👥 Введи свою групу\nПриклад: ІА-11"
+    
     try:
         await message.delete()
         await message.bot.edit_message_text(
             chat_id=message.chat.id,
             message_id=main_msg_id,
-            text="[5/5] 👥 Введи свою групу\nПриклад: ІА-11"
+            text=text,
+            reply_markup=builder.as_markup()
         )
     except Exception:
-        new_msg = await message.answer("[5/5] 👥 Введи свою групу\nПриклад: ІА-11")
+        new_msg = await message.answer(text, reply_markup=builder.as_markup())
         await state.update_data(main_message_id=new_msg.message_id)
 
     await state.set_state(RegisterForm.entering_group_kpi)
@@ -332,16 +343,20 @@ async def process_other_faculty(message: types.Message, state: FSMContext):
     data = await state.get_data()
     main_msg_id = data.get("main_message_id")
     text = "[5/5] 👥 Введи свою групу або курс:"
+    
+    builder = InlineKeyboardBuilder()
+    builder.button(text="Не знаю (Першокурсник)", callback_data="group_unknown")
 
     try:
         await message.delete()
         await message.bot.edit_message_text(
             chat_id=message.chat.id,
             message_id=main_msg_id,
-            text=text
+            text=text,
+            reply_markup=builder.as_markup()
         )
     except Exception:
-        new_msg = await message.answer(text)
+        new_msg = await message.answer(text, reply_markup=builder.as_markup())
         await state.update_data(main_message_id=new_msg.message_id)
 
     await state.set_state(RegisterForm.entering_group_other)
@@ -358,6 +373,14 @@ async def process_other_group(message: types.Message, state: FSMContext):
 
 
 # ==================== ПРАВИЛА ЗАХОДУ ====================
+
+@router.callback_query(RegisterForm.entering_group_kpi, F.data == "group_unknown")
+@router.callback_query(RegisterForm.entering_group_other, F.data == "group_unknown")
+async def process_unknown_group(callback: types.CallbackQuery, state: FSMContext):
+    await state.update_data(group="Не знаю (Першокурсник)")
+    await ask_for_rules(callback, state)
+    await callback.answer()
+
 
 async def ask_for_rules(event: types.Message | types.CallbackQuery, state: FSMContext):
     data = await state.get_data()
