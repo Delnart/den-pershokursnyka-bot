@@ -58,8 +58,8 @@ async def show_profile(callback: types.CallbackQuery, state: FSMContext):
         
     text += (
         f"───────────────\n"
-        f"📅 <b>31 серпня | 17:00–22:00</b>\n"
-        f"📍 вул. Політехнічна (біля 18 корпусу)"
+        f"📅 <b>31 серпня</b>\n"
+        f"📍 <a href='https://maps.app.goo.gl/Ufs7Pb8KbZ7v7tNA8'>вул. Політехнічна (біля 18 корпусу)</a>"
     )
 
     builder = InlineKeyboardBuilder()
