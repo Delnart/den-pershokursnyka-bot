@@ -496,7 +496,7 @@ async def confirm_registration(callback: types.CallbackQuery, state: FSMContext)
                 "📅 <b>Коли:</b> 31 серпня\n"
                 f"📍 <b>Де:</b> <a href='https://maps.app.goo.gl/Ufs7Pb8KbZ7v7tNA8'>вул. Політехнічна (біля 18 корпусу)</a>\n\n"
                 "Слідкуйте за оновленнями та актуальною інформацією про захід на каналах "
-                "<a href='https://t.me/fice_time'>FICE Time 🇺🇦</a> та <a href='https://t.me/dsr_kpi'>DSR KPI</a>\n\n"
+                "<a href='https://t.me/fice_time'>FICE Time 🇺🇦</a> та <a href='https://t.me/dsr_kpi'>ДСР (ex ДНВР) 🇺🇦</a>\n\n"
                 "💙 Будемо вдячні за донат на підтримку Сил оборони:\n"
                 f"🔗 <a href='{MONO_JAR_URL}'>Посилання на банку</a>\n"
                 f"💳 {MONO_CARD}"
